@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Статистика вовлечённости</h3>
+<canvas id="activityChart" width="800" height="350"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('activityChart').getContext('2d');
+const data = {
+  labels: Array.from({length: 30}, (_, i) => i+1),
+  datasets: [
+    { label: 'Учителя', data: {{ stats.teacher|tojson }}, borderColor: '#1a237e', fill: false },
+    { label: 'Ученики', data: {{ stats.student|tojson }}, borderColor: '#43a047', fill: false },
+    { label: 'Родители', data: {{ stats.parent|tojson }}, borderColor: '#ffb300', fill: false },
+    { label: 'Администрация', data: {{ stats.admin|tojson }}, borderColor: '#d32f2f', fill: false },
+  ]
+};
+new Chart(ctx, {
+  type: 'line',
+  data: data,
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: { x: { title: { display: true, text: 'День' } }, y: { title: { display: true, text: 'Активных пользователей' } } }
+  }
+});
+</script>
+{% endblock %} 

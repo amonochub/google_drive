@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Опросы</h3>
+{% for poll in polls %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>{{ poll.question }}</h5>
+    <form method="post" action="/polls/vote">
+      <input type="hidden" name="poll_id" value="{{ poll.id }}">
+      <div class="mb-2">
+        {% for opt in poll.options %}
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="option" value="{{ loop.index0 }}" id="opt{{ poll.id }}{{ loop.index0 }}" required>
+          <label class="form-check-label" for="opt{{ poll.id }}{{ loop.index0 }}">{{ opt }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <button class="btn btn-primary btn-sm">Голосовать</button>
+    </form>
+    <div class="mt-2">
+      <b>Результаты:</b>
+      <ul>
+        {% for opt, v in poll.options|zip(poll.votes) %}
+        <li>{{ opt }} — {{ v }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% if user.role in ["admin", "director"] %}
+<hr>
+<h5>Создать новый опрос</h5>
+<form method="post" action="/polls/create">
+  <div class="mb-2"><input type="text" name="question" class="form-control" placeholder="Вопрос" required></div>
+  <div class="mb-2"><input type="text" name="options" class="form-control" placeholder="Варианты (через ; )" required></div>
+  <button class="btn btn-success">Создать</button>
+</form>
+{% endif %}
+{% endblock %} 

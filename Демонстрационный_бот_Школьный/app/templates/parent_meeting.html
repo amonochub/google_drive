@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Онлайн-родительское собрание</h3>
+<div class="card mb-3" style="max-height:350px; overflow-y:auto;">
+  <div class="card-body">
+    {% for m in msgs %}
+      <div><b>{{ m.user }}:</b> {{ m.text }}</div>
+    {% endfor %}
+    {% if not msgs %}<div class="text-muted">Пока нет сообщений.</div>{% endif %}
+  </div>
+</div>
+<form method="post" action="/parent-meeting/send" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="text" class="form-control" placeholder="Ваш вопрос или комментарий" required>
+    <button class="btn btn-primary">Отправить</button>
+  </div>
+</form>
+{% endblock %} 
