@@ -1,7 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-<h3>QR-логин для гостей</h3>
-<p>Сканируйте этот QR-код камерой телефона, чтобы войти как гость:</p>
-<img src="/qr-login/qr.png?token={{ qr_token }}" alt="QR-код для гостя" style="width:220px;">
-<p class="mt-3"><b>Внимание:</b> QR-код одноразовый, действует ограниченное время.</p>
-{% endblock %} 
