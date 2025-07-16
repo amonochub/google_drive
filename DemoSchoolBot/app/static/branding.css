@@ -1,0 +1,37 @@
+body {
+  --brand-primary: #1a237e;
+  --brand-accent: #ffb300;
+  --brand-bg: #f5f5f5;
+  --brand-dark-bg: #181a20;
+  --brand-dark-text: #f5f5f5;
+  background-color: var(--brand-bg);
+}
+.navbar {
+  background-color: var(--brand-primary) !important;
+}
+.btn-accent {
+  background-color: var(--brand-accent);
+  color: #fff;
+}
+.logo {
+  height: 40px;
+  margin-right: 10px;
+}
+/* Тёмная тема */
+body.dark {
+  background-color: var(--brand-dark-bg);
+  color: var(--brand-dark-text);
+}
+body.dark .navbar, body.dark .card, body.dark .table {
+  background-color: #23272f !important;
+  color: var(--brand-dark-text);
+}
+body.dark .btn, body.dark .form-control, body.dark .form-select {
+  background-color: #23272f;
+  color: var(--brand-dark-text);
+  border-color: #444;
+}
+.theme-toggle {
+  cursor: pointer;
+  margin-left: 1rem;
+} 

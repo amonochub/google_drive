@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Поиск по истории</h3>
+<form method="get" action="/search" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="q" class="form-control" placeholder="Ключевое слово" value="{{ q }}" required>
+    <button class="btn btn-primary">Искать</button>
+  </div>
+</form>
+{% if results %}
+<table class="table table-bordered bg-white">
+  <thead><tr><th>Тип</th><th>Результат</th></tr></thead>
+  <tbody>
+    {% for r in results %}
+    <tr><td>{{ r.type }}</td><td>{{ r.text }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% elif q %}
+<div class="alert alert-warning">Ничего не найдено.</div>
+{% endif %}
+{% endblock %} 

@@ -1,0 +1,55 @@
+version: "3.9"
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - db
+      - redis
+    network_mode: bridge
+    networks:
+      - internal
+
+  web:
+    build: .
+    command: python -m app.web
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - internal
+    volumes:
+      - ./app/static:/app/static
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redisdata:/data
+    networks:
+      - internal
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  internal:
+    driver: bridge
+    internal: true

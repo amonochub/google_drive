@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Обращения учеников</h3>
+<table class="table table-bordered bg-white">
+  <thead>
+    <tr><th>Дата</th><th>Класс</th><th>Текст обращения</th><th>Статус</th><th>Действия</th></tr>
+  </thead>
+  <tbody>
+    {% for item in requests %}
+    <tr>
+      <td>{{ item.date }}</td>
+      <td>{{ item.class }}</td>
+      <td>{{ item.text }}</td>
+      <td>{{ item.status }}</td>
+      <td>
+        <button class="btn btn-sm btn-primary">Ответить</button>
+        <button class="btn btn-sm btn-success">Закрыть</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} 

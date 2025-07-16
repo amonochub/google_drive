@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Календарь событий</h3>
+<table class="table table-bordered bg-white">
+  <thead><tr><th>Дата</th><th>Событие</th><th>Описание</th></tr></thead>
+  <tbody>
+    {% for ev in events %}
+    <tr><td>{{ ev.date }}</td><td>{{ ev.title }}</td><td>{{ ev.desc }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="/calendar/export.ics" class="btn btn-outline-primary mb-3">Экспортировать в Google/Яндекс</a>
+{% if user.role in ["admin", "director", "teacher"] %}
+<hr>
+<h5>Добавить событие</h5>
+<form method="post" action="/calendar/add">
+  <div class="row mb-2">
+    <div class="col-md-4"><input type="date" name="date" class="form-control" required></div>
+    <div class="col-md-4"><input type="text" name="title" class="form-control" placeholder="Название" required></div>
+    <div class="col-md-4"><input type="text" name="desc" class="form-control" placeholder="Описание"></div>
+  </div>
+  <button class="btn btn-primary">Добавить</button>
+</form>
+{% endif %}
+{% endblock %} 

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link active" href="#">Все заявки учителей</a></li>
+  <li class="nav-item"><a class="nav-link" href="#">Учётные записи</a></li>
+  <li class="nav-item"><a class="nav-link" href="#">Тех-поддержка</a></li>
+</ul>
+<table class="table table-striped">
+  <thead><tr><th>Заявка</th><th>Статус</th></tr></thead>
+  <tbody>
+    {% for t in tickets %}
+    <tr><td>{{ t.title }}</td><td>{{ t.status }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<hr>
+{% if user.role in ["admin", "director"] %}
+<h5>Отправить уведомление учителям</h5>
+<form method="post" action="/admin/notify">
+  <div class="input-group mb-3">
+    <input type="text" name="text" class="form-control" placeholder="Текст уведомления">
+    <button class="btn btn-primary" type="submit">Отправить</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %} 
