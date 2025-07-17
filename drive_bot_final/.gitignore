@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+.venv/
+venv/
+ENV/
+
+# mypy/pytest
+.mypy_cache/
+.pytest_cache/
+
+# OS
+.DS_Store
+nohup.out
+
+# Logs
+*.log
+bot.log
+
+# Databases
+*.db
+*.sqlite
+dump.rdb
+
+# Pickle/token
+*.pickle
+token.json
+
+# Archives
+*.zip
+
+# Secret configs
+client_secret.json
+payline2-*.json
+
+# Jupyter
+*.ipynb_checkpoints/
+
+# Other
+*.rdb 
