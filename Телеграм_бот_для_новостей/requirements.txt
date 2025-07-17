@@ -1,0 +1,7 @@
+aiohttp
+feedparser
+PyYAML
+openai
+tenacity
+# sqlite3 входит в стандартную библиотеку Python 
+python-dotenv 
