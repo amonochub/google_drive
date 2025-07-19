@@ -31,19 +31,14 @@ class GDriveHandler:
 
 async def file_exists(folder_path: str, filename: str) -> Optional[str]:
     """Возвращает ID файла, если в указанной папке уже есть exact-совпадение."""
-    # 1. Ищем (создаём при необходимости) конечную папку
-    folder_id = await ensure_folders(folder_path)
-    svc = _get_service()
-    query = (
-        f"'{folder_id}' in parents and "
-        f"name = '{filename}' and trashed = false"
-    )
-    resp = svc.files().list(q=query, fields="files(id)").execute()
-    files = resp.get("files", [])
-    return files[0]["id"] if files else None
+    # TODO: Implement proper Google Drive integration
+    log.warning("file_exists not implemented - returning None")
+    return None
 
 
 def build_view_link(file_id: str) -> str:
-    return DRIVE_VIEW.format(file_id)
+    """Builds a Google Drive view link for the given file ID."""
+    return f"https://drive.google.com/file/d/{file_id}/view"
 
-__all__ = ['upload_file']
+
+__all__ = ['upload_file', 'file_exists', 'build_view_link']

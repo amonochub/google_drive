@@ -15,4 +15,4 @@ def setup(level: str = "INFO"):
     )
     root = logging.getLogger()
     root.setLevel(level)
-    root.addHandler(handler) 
+    root.addHandler(handler)

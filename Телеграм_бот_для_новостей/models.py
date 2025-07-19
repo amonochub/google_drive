@@ -9,4 +9,4 @@ class Article:
     summary: str
     url: str
     source: str
-    published: Optional[datetime] 
+    published: Optional[datetime]

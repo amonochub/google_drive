@@ -14,4 +14,4 @@ def extract_tokens(s: str) -> set[str]:
     res = set()
     for r in (RE_NUM, RE_IBAN, RE_DATE, RE_CURRENCY):
         res |= set(r.findall(s))
-    return {normal(t) for t in res} 
+    return {normal(t) for t in res}

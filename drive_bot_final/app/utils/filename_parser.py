@@ -59,4 +59,4 @@ def parse_filename(filename: str) -> Optional[FilenameInfo]:
         number=number,
         date=date,
         ext=ext,
-    ) 
+    )

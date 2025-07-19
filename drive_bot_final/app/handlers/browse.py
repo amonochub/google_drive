@@ -40,4 +40,4 @@ async def open_folder(call: types.CallbackQuery):
 
 @router.callback_query(lambda c: c.data == "root")
 async def go_root(call: types.CallbackQuery):
-    await browse_root(call.message) 
+    await browse_root(call.message)

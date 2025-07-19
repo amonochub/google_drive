@@ -13,4 +13,4 @@ def with_back(*rows: list[str]) -> ReplyKeyboardMarkup:
     """
     buttons = [[KeyboardButton(text=txt) for txt in row] for row in rows]
     buttons.append([KeyboardButton(text="🏠 Главное меню")])
-    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True) 
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)

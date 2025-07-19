@@ -222,4 +222,4 @@ def wait_rate_and_notify(self, chat_id: int, currency: str, amount: str, commiss
                 )
                 break
             await asyncio.sleep(300)
-    return loop.run_until_complete(_run()) 
+    return loop.run_until_complete(_run())

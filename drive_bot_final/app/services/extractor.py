@@ -23,4 +23,4 @@ def _extract_pdf(p: str):
                 for row in tbl:
                     if len(row) >= 2:
                         pairs.append((row[0] or "", row[1] or ""))
-    return pairs 
+    return pairs

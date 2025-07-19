@@ -13,4 +13,4 @@ def normalize(t: str) -> str:
 def get_entities(text: str, labels: set[str] = DEF_LABELS) -> set[str]:
     doc = _nlp(text)
     ents = {normalize(ent.text) for ent in doc.ents if ent.label_ in labels}
-    return ents 
+    return ents

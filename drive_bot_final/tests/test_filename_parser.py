@@ -38,4 +38,4 @@ def test_parser(name, principal, agent, doctype, number, date):
     assert info.doctype == doctype
     assert info.number == number
     assert info.date == date
-    assert info.gdrive_path.startswith(principal) 
+    assert info.gdrive_path.startswith(principal)

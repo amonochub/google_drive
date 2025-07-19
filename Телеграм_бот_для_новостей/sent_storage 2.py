@@ -30,4 +30,4 @@ def mark_sent(article_id: str, published: Optional[datetime]):
     published_str = published.isoformat() if published else None
     c.execute('INSERT OR IGNORE INTO sent (id, published) VALUES (?, ?)', (article_id, published_str))
     conn.commit()
-    conn.close() 
+    conn.close()

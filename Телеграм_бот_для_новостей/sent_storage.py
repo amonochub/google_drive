@@ -34,4 +34,4 @@ def mark_sent(article_id: str, published: Optional[datetime]):
     conn.close()
 
 def filter_new(articles: List[Article]) -> List[Article]:
-    return [a for a in articles if not is_sent(a.id)] 
+    return [a for a in articles if not is_sent(a.id)]

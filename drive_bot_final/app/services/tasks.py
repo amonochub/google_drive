@@ -20,4 +20,4 @@ def validate_task(file_path: str, user_id: int, chat_id: int, bot_token: str):
 
     await bot.send_document(chat_id, open(patched, "rb"), caption="Файл с подсветкой ⬆️")
     os.remove(file_path)
-    os.remove(patched) 
+    os.remove(patched)

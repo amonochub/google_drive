@@ -21,4 +21,4 @@ async def generate_cover(title: str, summary: str = "") -> bytes:
     image_url = response['data'][0]['url']
     async with aiohttp.ClientSession() as session:
         async with session.get(image_url) as resp:
-            return await resp.read() 
+            return await resp.read()

@@ -129,4 +129,4 @@ async def main() -> None:
     logging.info("✅ Завершено: %d статей обработано", len(done_pairs))
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

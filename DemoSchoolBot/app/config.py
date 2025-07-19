@@ -9,5 +9,9 @@ DB = {
     "name": "demo_local.db"
 }
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8152775753:AAHJDIYZTutzSvti9OHCaBJU897kOtCx1nM")
+# CRITICAL SECURITY FIX: Remove hardcoded token
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_TOKEN environment variable is required")
+
 ADMIN_IDS = [64210389, 1570881]

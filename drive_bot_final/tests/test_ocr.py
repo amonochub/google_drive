@@ -5,4 +5,4 @@ def test_extract_text_on_sample(tmp_path):
     sample.write_text("Hello OCR!")
 
     text = extract_text(sample)
-    assert "Hello" in text 
+    assert "Hello" in text

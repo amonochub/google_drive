@@ -10,4 +10,4 @@ async def send(
     Отправляем текст + КЛАВИАТУРА.
     Если kb не передана – прикрепляем главное меню.
     """
-    await message.answer(text, reply_markup=kb or MAIN_KB) 
+    await message.answer(text, reply_markup=kb or MAIN_KB)

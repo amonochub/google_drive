@@ -25,4 +25,4 @@ async def run_validation(msg: Message):
         md_report = build_report(missings)
         await msg.answer(md_report, parse_mode="Markdown")
 
-    await msg.answer_document(open(patched_path, "rb"), caption="Подсветила различия 💡") 
+    await msg.answer_document(open(patched_path, "rb"), caption="Подсветила различия 💡")

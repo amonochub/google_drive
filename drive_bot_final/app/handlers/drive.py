@@ -10,4 +10,4 @@ async def list_drive_folders(msg: Message):
     if not folders:
         return await msg.answer("Папочек пока нет 🥲")
     txt = "\n".join(f"📁 <b>{name}</b> — <i>{cnt} файлов</i>" for name, cnt in folders)
-    await msg.answer(txt) 
+    await msg.answer(txt)

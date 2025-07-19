@@ -36,4 +36,4 @@ def highlight_diffs(src: str, misses):
         for page in doc:
             annot = page.add_text_annot((50, 50), "⛔️ Есть расхождение")
         doc.save(dst)
-    return dst 
+    return dst

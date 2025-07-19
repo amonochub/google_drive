@@ -45,4 +45,4 @@ async def crawl():
     async with aiohttp.ClientSession(headers={"User-Agent": "GOZBot/1.0 (+https://stranagoz.ru)"}) as sess:
         tasks = [fetch_feed(sess, s) for s in sources]
         nested = await asyncio.gather(*tasks)
-    return [art for sub in nested for art in sub] 
+    return [art for sub in nested for art in sub]

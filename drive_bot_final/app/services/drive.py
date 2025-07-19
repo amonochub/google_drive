@@ -14,4 +14,4 @@ async def list_folders():
 
 async def upload_file(bytestream, name):
     media = {"name": name, "parents": [settings.ROOT_FOLDER_ID]}
-    drive.files().create(body=media, media_body=bytestream, fields="id").execute() 
+    drive.files().create(body=media, media_body=bytestream, fields="id").execute()

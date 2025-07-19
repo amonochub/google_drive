@@ -5,4 +5,4 @@ celery_app = Celery(
     "docbot",
     broker=settings.REDIS_DSN,
     backend=settings.REDIS_DSN
-) 
+)

@@ -13,4 +13,4 @@ async def test_fetch_rate_ok():
     with aioresponses() as m:
         m.get(CBR_URL.format(for_date=dt.date(2025, 1, 1)), body=xml)
         rate = await fetch_cbr_rate("USD", dt.date(2025, 1, 1))
-        assert rate == decimal.Decimal("90.00") 
+        assert rate == decimal.Decimal("90.00")

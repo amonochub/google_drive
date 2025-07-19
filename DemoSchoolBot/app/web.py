@@ -14,10 +14,26 @@ from fastapi.responses import StreamingResponse
 import secrets
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+import hashlib
+import hmac
 
-SECRET_KEY = os.getenv("SESSION_SECRET", "demo_secret")
+SECRET_KEY = os.getenv("SESSION_SECRET")
+if not SECRET_KEY:
+    raise ValueError("SESSION_SECRET environment variable is required")
+
 app = FastAPI(title="School Bot Web")
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+
+def hash_password(password: str) -> str:
+    """Hash password using SHA-256 with salt."""
+    salt = SECRET_KEY.encode('utf-8')
+    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000).hex()
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify password against hash."""
+    return hmac.compare_digest(hash_password(password), hashed)
 templates = Jinja2Templates(directory="app/templates")
 
 async def get_session():
@@ -42,12 +58,17 @@ async def login_page(request: Request):
 async def login_post(request: Request, session=Depends(get_session)):
     form = await request.form()
     login, pwd = form["login"], form["password"]
+
+    # First get user by login only
     user = await session.scalar(
-        select(User).where(User.login == login, User.password == pwd)
+        select(User).where(User.login == login)
     )
-    if not user:
+
+    # Verify password using secure comparison
+    if not user or not verify_password(pwd, user.password):
         return templates.TemplateResponse("login.html",
             {"request": request, "error": "Неверный логин или пароль", "roles": ROLES})
+
     request.session["uid"] = user.id
     return RedirectResponse(f"/{user.role}", status_code=302)
 
@@ -371,4 +392,4 @@ async def parent_meeting_send(request: Request, user=Depends(current_user)):
     return RedirectResponse("/parent-meeting", status_code=302)
 
 if __name__ == "__main__":
-    uvicorn.run("app.web:app", host="0.0.0.0", port=8000, reload=True) 
+    uvicorn.run("app.web:app", host="0.0.0.0", port=8000, reload=True)

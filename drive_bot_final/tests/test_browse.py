@@ -7,4 +7,4 @@ def test_list_drive_files_returns_list(monkeypatch):
     monkeypatch.setattr(browse, "list_children", lambda folder_id: dummy_files)
 
     files = browse.list_drive_files("root_id")
-    assert files == dummy_files 
+    assert files == dummy_files

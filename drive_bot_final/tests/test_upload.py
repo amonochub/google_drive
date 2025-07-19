@@ -16,4 +16,4 @@ def test_determine_path_smoke(filename, expected_part):
     """
     path = determine_path(filename)
     assert isinstance(path, str)
-    assert expected_part.lower() in path.lower() 
+    assert expected_part.lower() in path.lower()

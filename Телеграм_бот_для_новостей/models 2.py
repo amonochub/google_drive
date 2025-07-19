@@ -9,4 +9,4 @@ class Article:
     summary: str
     source: str      # например, 'TASS'
     url: str
-    published: Optional[datetime] 
+    published: Optional[datetime]

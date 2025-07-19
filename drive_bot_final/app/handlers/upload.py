@@ -1,28 +1,35 @@
 from __future__ import annotations
 
 import asyncio
+import tempfile
+import time
+from collections import defaultdict
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List
+
 from aiogram import Router, F
 from aiogram.types import (
     Message,
-    FSInputFile,
     CallbackQuery,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from pathlib import Path
-from typing import Dict, List
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-import tempfile
-from collections import defaultdict
-from dataclasses import dataclass
-import time
+
+from app.utils.filename_parser import parse_filename, FilenameInfo
+from app.services import gdrive_handler
+from app.config import settings
+from app.services.ocr import run_ocr
+from app.services.analyzer import extract_parameters
 
 CACHE_TTL = 45  # секунд
 VALID_BATCH_LIMIT = 15
-user_batches = defaultdict(list)  # user_id -> [FileInfo]
-user_batch_tasks = {}  # user_id -> asyncio.Task
+user_batches: dict[int, list[FileInfo]] = defaultdict(list)  # user_id -> [FileInfo]
+user_batch_tasks: dict[int, asyncio.Task] = {}  # user_id -> asyncio.Task
+
 
 @dataclass
 class FileInfo:
@@ -31,12 +38,13 @@ class FileInfo:
     guessed: FilenameInfo | None
     status: str  # 'ok' | 'need_wizard'
 
-from app.utils.filename_parser import parse_filename, FilenameInfo
-from app.services import gdrive_handler
-from app.config import settings
-from app.services.drive import upload_file
-from app.services.ocr import run_ocr
-from app.services.analyzer import extract_parameters
+
+class FilenameWizard(StatesGroup):
+    principal = State()
+    agent = State()
+    doctype = State()
+    number = State()
+    date = State()
 
 router = Router(name="upload")
 
@@ -123,12 +131,20 @@ async def cb_fix(call: CallbackQuery, state: FSMContext):
 
 @router.message(FilenameWizard.principal)
 async def wizard_principal(msg: Message, state: FSMContext):
+    if not msg.text:
+        await msg.answer("Пожалуйста, введите принципала:")
+        return
+
     data = await state.get_data()
     batch = data["batch"]
     idx = data["fix_idx"]
     batch[idx].guessed = FilenameInfo(
         principal=msg.text.strip(),
-        agent=None, doctype=None, number=None, date=None, ext=batch[idx].orig_name.split(".")[-1]
+        agent=None,
+        doctype=None,
+        number=None,
+        date=None,
+        ext=batch[idx].orig_name.split(".")[-1]
     )
     await state.update_data(batch=batch)
     await msg.answer("Введите агента:")
