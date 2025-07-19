@@ -1,34 +1,8 @@
-version: '3.8'
+
+version: "3.9"
 services:
   bot:
     build: .
-    env_file: .env
-    volumes:
-      - ./payline2-75c36eec2d75.json:/app/payline2-75c36eec2d75.json:ro
-    ports:
-      - "8000:8000"
-    depends_on:
-      - redis
-      - postgres
-  redis:
-    image: redis:7.0-alpine
-    ports:
-      - "6379:6379"
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: botdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-volumes:
-  pgdata:
+    env_file:
+      - .env
+    restart: unless-stopped
