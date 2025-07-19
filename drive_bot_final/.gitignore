@@ -1,3 +1,19 @@
+# Секреты и приватные ключи
+.env
+credentials.json
+drive_bot_final/.env
+drive_bot_final/credentials.json
+credentials/*
+*.env
+*.secret
+*.key
+*.pem
+*.p12
+*.sqlite3
+*.db
+*.log
+__pycache__/
+
 # Python
 __pycache__/
 *.pyc
@@ -36,7 +52,6 @@ token.json
 # Secret configs
 client_secret.json
 payline2-*.json
-.env
 
 # Jupyter
 *.ipynb_checkpoints/
