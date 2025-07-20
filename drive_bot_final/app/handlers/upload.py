@@ -37,6 +37,7 @@ from app.config import settings
 from app.services.drive import upload_file
 from app.services.ocr import run_ocr
 from app.services.analyzer import extract_parameters
+from app.utils.buffers import add_file, get_batch, flush_batch, get_size, set_ttl
 
 router = Router(name="upload")
 
@@ -195,31 +196,33 @@ async def handle_upload(msg: Message):
         await send_error(msg, "Файл не найден или не содержит имени.")
         return
     user_id = msg.from_user.id
-    # --- Массовая загрузка: «умное окно» ---
-    if len(user_batches[user_id]) >= VALID_BATCH_LIMIT:
-        await msg.reply(
-            f"⚠️ Вы загрузили более {VALID_BATCH_LIMIT} файлов за раз.\n"
-            "Для больших партий используйте ZIP-архив или CSV-режим.\n"
-            "Подробнее: /help"
-        )
-        return
+    # --- Redis batch buffer ---
     import tempfile, os
     with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{doc.file_name}") as tmp:
         await msg.bot.download(doc.file_id, destination=tmp.name)
         guessed = await try_guess_filename(tmp.name, doc.file_name)
     os.unlink(tmp.name)
     status = 'ok' if guessed else 'need_wizard'
-    user_batches[user_id].append(FileInfo(doc.file_id, doc.file_name, guessed, status))
-    if user_id not in user_batch_tasks:
+    fi = FileInfo(doc.file_id, doc.file_name, guessed, status)
+    await add_file(user_id, fi)
+    size = await get_size(user_id)
+    if size == 1:
         import asyncio
         async def batch_timer():
             await asyncio.sleep(CACHE_TTL)
-            batch = user_batches.pop(user_id, [])
-            user_batch_tasks.pop(user_id, None)
+            batch = await flush_batch(user_id)
             if not batch:
                 return
             await send_batch_summary(msg, batch)
-        user_batch_tasks[user_id] = asyncio.create_task(batch_timer())
+        asyncio.create_task(batch_timer())
+    if size > VALID_BATCH_LIMIT:
+        await msg.reply(
+            f"⚠️ Вы загрузили более {VALID_BATCH_LIMIT} файлов за раз.\n"
+            "Для больших партий используйте ZIP-архив или CSV-режим.\n"
+            "Подробнее: /help"
+        )
+        await flush_batch(user_id)
+        return
     await msg.reply(f"👌 Файл принят! Можно присылать ещё (до {VALID_BATCH_LIMIT} файлов за {CACHE_TTL} сек)")
 
 
@@ -241,6 +244,52 @@ class FilenameWizard(StatesGroup):
     number = State()
     date = State()
     confirm = State()
+
+class BulkFixForm(StatesGroup):
+    waiting_for_file_index = State()
+    waiting_for_new_name = State()
+
+@router.callback_query(F.data == "bulk_fix")
+async def start_bulk_fix(cb: CallbackQuery, state: FSMContext):
+    uid = cb.from_user.id
+    batch = await get_batch(uid)
+    if not batch:
+        await cb.message.answer("Нет файлов для исправления.")
+        return
+    # Показываем список файлов с номерами
+    text = "Выберите номер файла для исправления:\n"
+    for i, fi in enumerate(batch, 1):
+        text += f"{i}. {fi.orig_name}\n"
+    await state.update_data(batch=batch)
+    await cb.message.answer(text)
+    await state.set_state(BulkFixForm.waiting_for_file_index)
+    await cb.answer()
+
+@router.message(BulkFixForm.waiting_for_file_index)
+async def bulk_fix_index(msg: Message, state: FSMContext):
+    data = await state.get_data()
+    batch = data["batch"]
+    try:
+        idx = int(msg.text.strip()) - 1
+        assert 0 <= idx < len(batch)
+    except Exception:
+        await msg.answer("Некорректный номер. Попробуйте ещё раз.")
+        return
+    await state.update_data(fix_idx=idx)
+    await msg.answer(f"Введите новое имя для файла: {batch[idx].orig_name}")
+    await state.set_state(BulkFixForm.waiting_for_new_name)
+
+@router.message(BulkFixForm.waiting_for_new_name)
+async def bulk_fix_new_name(msg: Message, state: FSMContext):
+    data = await state.get_data()
+    batch = data["batch"]
+    idx = data["fix_idx"]
+    new_name = msg.text.strip()
+    batch[idx].orig_name = new_name
+    # Можно также обновить guessed, если нужно
+    await state.update_data(batch=batch)
+    await msg.answer(f"Имя файла обновлено! Если нужно исправить ещё — выберите номер, иначе /menu.")
+    await state.set_state(BulkFixForm.waiting_for_file_index)
 
 async def try_guess_filename(file_path: str, orig_name: str) -> FilenameInfo | None:
     # 1. Попытка парсинга имени

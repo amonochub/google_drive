@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     ai_analysis_enabled: bool = Field(False, alias='AI_ANALYSIS_ENABLED')
     REDIS_DSN: str = Field(..., alias='REDIS_DSN')
     HEAVY_PDF_MB: float = Field(..., alias='HEAVY_PDF_MB')
+    GOOGLE_CREDENTIALS_FILE: str = Field(..., alias="GOOGLE_CREDENTIALS_FILE")
 
     # -------------------  Pydantic v2 meta  ------------------- #
     model_config = SettingsConfigDict(

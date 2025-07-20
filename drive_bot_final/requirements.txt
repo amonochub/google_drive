@@ -17,3 +17,4 @@ pymupdf>=1.23
 pdf2image>=1.17
 pytesseract>=0.3
 pillow>=10
+redis[asyncio]>=4.6

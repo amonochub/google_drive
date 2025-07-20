@@ -1,8 +1,15 @@
 
-version: "3.9"
+version: '3.8'
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
   bot:
     build: .
-    env_file:
-      - .env
-    restart: unless-stopped
+    command: python -m app.main
+    environment:
+      - REDIS_DSN=redis://redis:6379/0
+    depends_on:
+      - redis
