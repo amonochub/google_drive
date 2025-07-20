@@ -1,4 +1,4 @@
-import asyncio, tempfile
+import asyncio, tempfile, os
 from aiogram import Router, F
 from aiogram.types import Message
 from app.services.reporter import validate_doc, build_report
@@ -25,4 +25,16 @@ async def run_validation(msg: Message):
         md_report = build_report(missings)
         await msg.answer(md_report, parse_mode="Markdown")
 
-    await msg.answer_document(open(patched_path, "rb"), caption="Подсветила различия 💡") 
+    # Безопасная отправка файла с проверкой существования
+    if patched_path and os.path.exists(patched_path):
+        try:
+            with open(patched_path, "rb") as f:
+                await msg.answer_document(f, caption="Подсветила различия 💡")
+        except (OSError, IOError) as e:
+            await msg.answer(f"Ошибка отправки файла: {e}")
+        finally:
+            # Безопасное удаление временного файла
+            try:
+                os.unlink(patched_path)
+            except OSError:
+                pass 

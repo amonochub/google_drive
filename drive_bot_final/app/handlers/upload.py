@@ -195,13 +195,45 @@ async def handle_upload(msg: Message):
     if not doc or not doc.file_name:
         await send_error(msg, "Файл не найден или не содержит имени.")
         return
+    
+    # Валидация имени файла
+    from app.utils.filename_parser import validate_filename, sanitize_filename, FilenameValidationError
+    
+    # Проверка размера файла (ограничение 50MB для примера)
+    if doc.file_size and doc.file_size > 50 * 1024 * 1024:
+        await send_error(msg, "Файл слишком большой (максимум 50MB).")
+        return
+    
+    # Валидация и санитизация имени файла
+    validation_errors = validate_filename(doc.file_name)
+    if validation_errors:
+        error_text = "Ошибки в имени файла:\n" + "\n".join(f"• {error}" for error in validation_errors)
+        try:
+            sanitized_name = sanitize_filename(doc.file_name)
+            error_text += f"\n\nПредлагаю исправленное имя: {sanitized_name}"
+        except FilenameValidationError:
+            error_text += "\n\nИмя файла невозможно исправить автоматически."
+        
+        await send_error(msg, error_text)
+        return
+    
     user_id = msg.from_user.id
     # --- Redis batch buffer ---
     import tempfile, os
-    with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{doc.file_name}") as tmp:
-        await msg.bot.download(doc.file_id, destination=tmp.name)
-        guessed = await try_guess_filename(tmp.name, doc.file_name)
-    os.unlink(tmp.name)
+    
+    # Безопасное создание временного файла
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{doc.file_name}") as tmp:
+            await msg.bot.download(doc.file_id, destination=tmp.name)
+            guessed = await try_guess_filename(tmp.name, doc.file_name)
+    except Exception as e:
+        await send_error(msg, f"Ошибка загрузки файла: {str(e)}")
+        return
+    finally:
+        # Убеждаемся что временный файл удален
+        if 'tmp' in locals() and os.path.exists(tmp.name):
+            os.unlink(tmp.name)
+    
     status = 'ok' if guessed else 'need_wizard'
     fi = FileInfo(doc.file_id, doc.file_name, guessed, status)
     await add_file(user_id, fi)
@@ -292,28 +324,72 @@ async def bulk_fix_new_name(msg: Message, state: FSMContext):
     await state.set_state(BulkFixForm.waiting_for_file_index)
 
 async def try_guess_filename(file_path: str, orig_name: str) -> FilenameInfo | None:
+    """
+    Попытка угадать структуру имени файла
+    
+    Args:
+        file_path: Путь к временному файлу
+        orig_name: Оригинальное имя файла
+        
+    Returns:
+        FilenameInfo или None если не удалось определить
+    """
+    from app.utils.filename_parser import sanitize_filename, FilenameValidationError
+    
+    # Санитизация оригинального имени
+    try:
+        if orig_name:
+            orig_name = sanitize_filename(orig_name)
+    except FilenameValidationError:
+        # Если имя нельзя санитизировать, используем fallback
+        orig_name = "unknown_file.pdf"
+    
     # 1. Попытка парсинга имени
     info = parse_filename(orig_name or "")
     if info:
         return info
+    
     # 2. OCR/docx/pdf анализ
     import asyncio
     try:
         loop = asyncio.get_running_loop()
         text = await loop.run_in_executor(None, run_ocr, file_path)
-    except Exception:
+    except Exception as e:
+        # Логируем ошибку, но не прерываем выполнение
+        import logging
+        logging.getLogger("filename_parser").warning(f"Ошибка OCR анализа: {e}")
         text = ""
-    params = extract_parameters(text)
+    
+    # Извлекаем параметры из текста
+    params = extract_parameters(text or "")
+    
     # Пробуем собрать поля
     principal = params.get("org", [None])[0]
     doctype = next((dt for dt in ["договор", "акт", "поручение"] if dt in (text or "").lower()), None)
     number = params.get("number", [None])[0]
     date = params.get("date", [None])[0]
+    
+    # Определяем расширение файла
     ext = ""
-    if orig_name:
+    if orig_name and "." in orig_name:
         ext = orig_name.split(".")[-1].lower()
+    
+    # Валидация всех обязательных полей
     if principal and doctype and number and date and ext:
-        return FilenameInfo(principal=principal, agent=None, doctype=doctype, number=number, date=date, ext=ext)
+        try:
+            return FilenameInfo(
+                principal=principal, 
+                agent=None, 
+                doctype=doctype, 
+                number=number, 
+                date=date, 
+                ext=ext
+            )
+        except FilenameValidationError as e:
+            # Логируем проблему валидации
+            import logging
+            logging.getLogger("filename_parser").warning(f"Ошибка валидации извлеченных данных: {e}")
+    
     return None
 
 async def send_batch_summary(msg: Message, batch: list[FileInfo]):
