@@ -12,7 +12,7 @@ celery[redis]>=5.3
 orjson>=3.10
 python-json-logger>=2
 spacy>=3.7
-ru-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_lg-3.7.0/ru_core_news_lg-3.7.0-py3-none-any.whl
+# ru-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_lg-3.7.0/ru_core_news_lg-3.7.0-py3-none-any.whl
 pymupdf>=1.23
 pdf2image>=1.17
 pytesseract>=0.3

@@ -9,6 +9,8 @@ Telegram-бот для массовой и интеллектуальной за
 - Прогресс-бара и подробного UX
 - Интеграции с Google Drive API (OAuth2)
 - Асинхронной обработки и Celery
+- Структурированного логирования (structlog)
+- Docker-окружения и healthcheck
 
 ---
 
@@ -34,6 +36,18 @@ Telegram-бот для массовой и интеллектуальной за
 
 ---
 
+## Запуск через Docker Compose
+
+```bash
+# Соберите и запустите сервисы (бот + Redis)
+docker-compose up --build
+```
+
+- Бот стартует только после того, как Redis станет healthy
+- Все переменные окружения можно задать через .env или docker-compose.yml
+
+---
+
 ## Переменные окружения (пример .env)
 
 ```
@@ -41,8 +55,31 @@ TELEGRAM_TOKEN=your-telegram-token
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_REFRESH_TOKEN=...
-GOOGLE_DRIVE_ROOT=...
-REDIS_DSN=redis://localhost:6379/0
+GOOGLE_DRIVE_ROOT_FOLDER=...
+REDIS_DSN=redis://redis:6379/0
+MAX_FILE_SIZE_MB=50
+HEAVY_PDF_MB=20
+CACHE_TTL=45
+```
+
+---
+
+## Структура проекта
+
+```
+drive_bot_final/
+├── app/
+│   ├── handlers/         # Хендлеры aiogram FSM, меню, upload, validate
+│   ├── services/         # Интеграции: Google Drive, OCR, Celery, CBR
+│   ├── utils/            # Парсеры, валидация, вспомогательные функции
+│   ├── config.py         # Pydantic-настройки
+│   ├── main.py           # Точка входа
+│   └── ...
+├── tests/                # Pytest-тесты (upload, ocr, validate, FSM, batch)
+├── requirements.txt
+├── docker-compose.yml
+├── README.md
+└── ...
 ```
 
 ---
@@ -55,9 +92,9 @@ REDIS_DSN=redis://localhost:6379/0
 
 **Пример:**
 ```
-/bulk Демирекс Валиент Договор 20250523
-/bulk stop
-/bulk status
+/массовая Демирекс Валиент Договор 20250523
+/массовая стоп
+/массовая статус
 ```
 
 ---
@@ -65,11 +102,12 @@ REDIS_DSN=redis://localhost:6379/0
 ## Тесты
 
 ```bash
-pytest
+pytest --disable-warnings -v
 ```
 
 - Примеры тестов: `tests/test_filename_parser.py`, `tests/test_upload.py`, ...
 - Для моков используйте `pytest-mock` или встроенные фикстуры.
+- Покрытие: upload, batch, FSM, OCR, validate, edge-cases
 
 ---
 
@@ -80,6 +118,17 @@ pytest
 - Проверка на секреты
 
 Workflow: `.github/workflows/ci.yml`
+
+---
+
+## Архитектура и best practices
+- Асинхронный aiogram 3.x, FSM, reply/inline клавиатуры
+- Структурированное логирование через structlog (JSON)
+- Валидация файлов: расширение, размер, опасные символы
+- Exponential backoff для Google Drive API
+- Все секреты — только в .env, .gitignore
+- Docker healthcheck для Redis и бота
+- Покрытие тестами всех критичных сценариев
 
 ---
 

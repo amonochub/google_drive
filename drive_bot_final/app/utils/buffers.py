@@ -7,7 +7,7 @@ redis_client = redis.from_url(settings.REDIS_DSN)
 async def add_file(user_id: int, file_info):
     key = f"buffer:{user_id}"
     await redis_client.rpush(key, pickle.dumps(file_info))
-    await redis_client.expire(key, settings.CACHE_TTL)
+    await redis_client.expire(key, settings.cache_ttl)
 
 async def get_batch(user_id: int):
     key = f"buffer:{user_id}"

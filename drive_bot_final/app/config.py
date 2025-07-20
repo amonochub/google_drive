@@ -2,6 +2,8 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, ValidationError
+import structlog
+log = structlog.get_logger(__name__)
 
 # --------------------------------------------------------------------------- #
 #  ‣  Полезные тайп-алиасы
@@ -40,7 +42,7 @@ class Settings(BaseSettings):
     ai_analysis_enabled: bool = Field(False, alias='AI_ANALYSIS_ENABLED')
     REDIS_DSN: str = Field(..., alias='REDIS_DSN')
     HEAVY_PDF_MB: float = Field(..., alias='HEAVY_PDF_MB')
-    GOOGLE_CREDENTIALS_FILE: str = Field(..., alias="GOOGLE_CREDENTIALS_FILE")
+    cache_ttl: int = Field(45, alias='CACHE_TTL')
 
     # -------------------  Pydantic v2 meta  ------------------- #
     model_config = SettingsConfigDict(
@@ -59,12 +61,23 @@ class Settings(BaseSettings):
         # drive_scopes → List[str]
         if isinstance(self.drive_scopes, str):
             self.drive_scopes = [s.strip() for s in self.drive_scopes.split(',') if s.strip()]
+        # cache_ttl → int
+        if isinstance(self.cache_ttl, str):
+            self.cache_ttl = int(self.cache_ttl)
+
+    @property
+    def redis_dsn(self) -> str:
+        import os
+        dsn = self.REDIS_DSN
+        if os.getenv('DOCKER_ENV', '').lower() == 'true':
+            dsn = dsn.replace('localhost', 'redis').replace('127.0.0.1', 'redis')
+        return dsn
 
 # -------------------  Singleton - чтобы импортировать везде ---------------- #
 try:
     settings = Settings()   # noqa:  S105  (pydantic валидирует сам)
 except ValidationError as err:
-    print('❌  Ошибка валидации настроек\n', err.json(indent=2))
+    log.error("settings_validation_error", error=err.json(indent=2))
     raise SystemExit(1)
 
 @lru_cache

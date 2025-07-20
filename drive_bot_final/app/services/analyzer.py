@@ -1,8 +1,9 @@
 
 import re, logging, textwrap
 from collections import defaultdict
+import structlog
 
-log = logging.getLogger(__name__)
+log = structlog.get_logger(__name__)
 
 R_PATTERNS = {
     "iban": r"[A-Z]{2}\d{2}[A-Z0-9]{11,30}",
@@ -14,11 +15,16 @@ R_PATTERNS = {
 }
 
 def extract_parameters(text: str) -> dict[str, list[str]]:
-    res = defaultdict(list)
-    for key, pattern in R_PATTERNS.items():
-        for m in re.findall(pattern, text, flags=re.IGNORECASE):
-            res[key].append(m.strip())
-    return dict(res)
+    try:
+        res = defaultdict(list)
+        for key, pattern in R_PATTERNS.items():
+            for m in re.findall(pattern, text, flags=re.IGNORECASE):
+                res[key].append(m.strip())
+        log.info("parameters_extracted", keys=list(res.keys()), count=sum(len(v) for v in res.values()))
+        return dict(res)
+    except Exception as e:
+        log.error("extract_parameters_failed", error=str(e))
+        return {}
 
 def compare_ru_en(ru_text: str, en_text: str) -> list[str]:
     issues = []

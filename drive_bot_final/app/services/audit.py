@@ -1,6 +1,8 @@
-import logging
+import structlog
 import time
 from functools import wraps
+
+log = structlog.get_logger(__name__)
 
 def log_operation(func):
     @wraps(func)
@@ -9,10 +11,10 @@ def log_operation(func):
         try:
             result = await func(*args, **kwargs)
             duration = time.time() - start_time
-            logging.info(f"AUDIT: {func.__name__} duration={duration:.2f}s result={result}")
+            log.info("audit_success", func=func.__name__, duration=duration, result=str(result))
             return result
         except Exception as e:
             duration = time.time() - start_time
-            logging.error(f"AUDIT: {func.__name__} duration={duration:.2f}s error={e}")
+            log.error("audit_error", func=func.__name__, duration=duration, error=str(e))
             raise
     return wrapper 

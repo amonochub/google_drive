@@ -4,6 +4,7 @@ def main_menu() -> ReplyKeyboardMarkup:
     kb = [
         [KeyboardButton(text="📂 Обзор папок"), KeyboardButton(text="⬆️ Загрузить файл")],
         [KeyboardButton(text="🤖 Проверка документа")],
+        [KeyboardButton(text="💰 Расчёт для клиента")],
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 

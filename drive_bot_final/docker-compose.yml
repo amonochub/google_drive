@@ -6,10 +6,28 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
   bot:
     build: .
     command: python -m app.main
     environment:
       - REDIS_DSN=redis://redis:6379/0
+      - GDRIVE_CLIENT_ID=${GDRIVE_CLIENT_ID}
+      - GDRIVE_CLIENT_SECRET=${GDRIVE_CLIENT_SECRET}
+      - GDRIVE_REFRESH_TOKEN=${GDRIVE_REFRESH_TOKEN}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - LOG_LEVEL=INFO
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./bot.log:/app/bot.log
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('redis',6379))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

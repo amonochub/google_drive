@@ -11,6 +11,8 @@ from aiogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton
 )
 from celery import Celery
+import structlog
+log = structlog.get_logger(__name__)
 
 # --- Настройки ---
 from app.config import settings
@@ -23,11 +25,11 @@ celery_app = Celery(
     backend=settings.REDIS_DSN
 )
 
-CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp?date_req={:%d/%m/%Y}"
+CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp?date_req={for_date}"
 ISO2CBR = {"USD": "R01235", "EUR": "R01239", "CNY": "R01375"}
 
 async def fetch_cbr_rate(currency: str, for_date: dt.date) -> decimal.Decimal | None:
-    url = CBR_URL.format(for_date)
+    url = CBR_URL.format(for_date=for_date)
     import aiohttp
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=10) as resp:
@@ -47,10 +49,10 @@ async def safe_fetch_rate(currency: str, date: dt.date) -> decimal.Decimal | Non
     try:
         rate = await fetch_cbr_rate(currency, date)
         if rate is None:
-            logging.warning(f"CBR rate not found {currency} {date}")
+            log.warning("cbr_rate_not_found", currency=currency, date=str(date))
         return rate
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-        logging.error(f"CBR fetch failed: {e}")
+        log.error("cbr_fetch_failed", currency=currency, date=str(date), error=str(e))
         return None
 
 def result_message(currency, rate, amount, commission_pct):

@@ -2,7 +2,9 @@ import decimal
 import datetime as dt
 from aioresponses import aioresponses
 from app.handlers.client_calc import fetch_cbr_rate, CBR_URL
+import pytest
 
+@pytest.mark.asyncio
 async def test_fetch_rate_ok():
     xml = '''<?xml version="1.0" encoding="windows-1251"?>
     <ValCurs Date="01.01.2025" name="Foreign Currency Market">
