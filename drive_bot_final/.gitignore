@@ -58,4 +58,4 @@ payline2-*.json
 
 # Other
 *.rdb 
-.env.test 
+.env.test drive_bot_final/ru_core_news_lg-3.8.0-py3-none-any.whl
